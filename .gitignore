@@ -1,0 +1,8 @@
+/transformers.html
+/transformers.pdf
+/__pycache__
+/runs
+/weights
+/wandb
+/*.tmx
+/*.json
