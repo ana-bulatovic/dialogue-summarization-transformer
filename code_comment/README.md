@@ -7,16 +7,15 @@ Projekat za **generisanje opisa koda u prirodnom jeziku**: ulaz je Python kod (n
 
 ## Skup podataka
 
-Korišćen je HuggingFace dataset **[CM/codexglue_code2text_python](https://huggingface.co/datasets/CM/codexglue_code2text_python)** (CodeXGlue Code-to-Text, Python):
+**Podrazumevano:** HuggingFace **[code-search-net/code_search_net](https://huggingface.co/datasets/code-search-net/code_search_net)** (CodeSearchNet), samo Python:
 
-- ~280k parova (kod, docstring)
-- Kolone: `code` (telо funkcije), `docstring` (opis u prirodnom jeziku)
-- Train/validation/test splitovi
+- Kolone: `func_code_string` (kod funkcije), `func_documentation_string` (docstring)
+- Splitovi: train / valid / test; filter `--language python`
+- Trening: 100k uzoraka, batch 64, 5 epoha; na kraju svake epohe računa se evaluacija i čuvaju težine
 
-Ako neki drugi dataset ima drugačije nazive kolona, trening možeš prilagoditi argumentima:
+Alternativa: `--dataset CM/codexglue_code2text_python --source-column code --target-column docstring`.
 
-- `--source-column` (npr. `code`)
-- `--target-column` (npr. `docstring`)
+Prilagodbe: `--source-column`, `--target-column`, `--language` (prazno = bez filtera).
 
 ## Metode
 
@@ -28,7 +27,7 @@ Ako neki drugi dataset ima drugačije nazive kolona, trening možeš prilagoditi
 
 Iz korena repozitorijuma (folder `transformer`):
 
-**Trening (podrazumevano: 20k train, 1k val/test, 10 epoha):**
+**Trening (CodeSearchNet Python: 100k train, batch 64, 5 epoha, evaluacija na kraju svake epohe):**
 ```bash
 python code_comment/train_code_comment.py --run-dir runs/code_comment
 ```

@@ -1,5 +1,5 @@
 """
-Code → Docstring (opis koda): HF dataset CM/codexglue_code2text_python.
+Code → Docstring (opis koda). Podržani dataseti: CodeSearchNet Python, CM/codexglue_code2text_python.
 
 Ulaz: Python kod (funkcija), izlaz: kratak opis u prirodnom jeziku (docstring).
 Koristi isti encoder-decoder Transformer kao hf_seq2seq (model.py, dataset.causal_mask).
@@ -38,10 +38,10 @@ from dataset import causal_mask
 from model import build_transformer
 
 
-# Dataset: CM/codexglue_code2text_python — kolone: code, docstring
-DATASET_NAME = "CM/codexglue_code2text_python"
-SOURCE_COLUMN = "code"
-TARGET_COLUMN = "docstring"
+# CodeSearchNet Python: kolone func_code_string, func_documentation_string; split "valid"
+DATASET_NAME = "code-search-net/code_search_net"
+SOURCE_COLUMN = "func_code_string"
+TARGET_COLUMN = "func_documentation_string"
 
 
 def get_row_value(row: Dict[str, Any], key: str) -> str:
@@ -102,16 +102,24 @@ def load_hf_splits(
     max_train: int,
     max_val: int,
     max_test: int,
+    language_filter: Optional[str] = None,
 ) -> Tuple[Dataset, Dataset, Dataset]:
-    """Učitava HF dataset i vraća (train, validation, test)."""
+    """Učitava HF dataset i vraća (train, validation, test). CodeSearchNet koristi split 'valid'."""
     ds = load_dataset(dataset_name, dataset_config) if dataset_config else load_dataset(dataset_name)
 
     if "train" in ds:
         train = ds["train"]
     else:
         train = ds[list(ds.keys())[0]]
-    val = ds.get("validation")
+    val = ds.get("validation") or ds.get("valid")
     test = ds.get("test")
+
+    if language_filter and "language" in train.column_names:
+        train = train.filter(lambda x: x.get("language") == language_filter)
+        if val is not None:
+            val = val.filter(lambda x: x.get("language") == language_filter)
+        if test is not None:
+            test = test.filter(lambda x: x.get("language") == language_filter)
 
     if val is None or test is None:
         tmp_size = min(max_val + max_test, max(1, int(0.2 * len(train))))
@@ -321,15 +329,16 @@ def evaluate(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Code → Docstring (CM/codexglue_code2text_python)")
-    parser.add_argument("--dataset", default=DATASET_NAME, help="HF dataset (code + docstring)")
+    parser = argparse.ArgumentParser(description="Code → Docstring (CodeSearchNet Python / drugi)")
+    parser.add_argument("--dataset", default=DATASET_NAME, help="HF dataset (npr. code-search-net/code_search_net)")
     parser.add_argument("--dataset-config", default="", help="Konfiguracija dataseta ako postoji")
-    parser.add_argument("--source-column", default=SOURCE_COLUMN, help="Kolone: code / docstring")
-    parser.add_argument("--target-column", default=TARGET_COLUMN, help="Docstring = opis koda")
+    parser.add_argument("--source-column", default=SOURCE_COLUMN, help="Kod: func_code_string ili code")
+    parser.add_argument("--target-column", default=TARGET_COLUMN, help="Opis: func_documentation_string ili docstring")
+    parser.add_argument("--language", default="python", help="Filter po jeziku (CodeSearchNet: python, go, ...); prazno = bez filtera")
     parser.add_argument("--run-dir", default="runs/code_comment")
     parser.add_argument("--force-rebuild-tokenizers", action="store_true")
-    parser.add_argument("--epochs", type=int, default=10)
-    parser.add_argument("--batch-size", type=int, default=16)
+    parser.add_argument("--epochs", type=int, default=5, help="Broj epoha (1 epoha = 1 prolaz kroz 100k, eval na kraju)")
+    parser.add_argument("--batch-size", type=int, default=64, help="Veličina batch-a; evaluacija i ažuriranje težina na kraju svake epohe")
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--context-size", type=int, default=256)
@@ -338,9 +347,9 @@ def main() -> None:
     parser.add_argument("--heads", type=int, default=8)
     parser.add_argument("--dropout", type=float, default=0.1)
     parser.add_argument("--d-ff", type=int, default=512)
-    parser.add_argument("--max-train", type=int, default=20_000)
-    parser.add_argument("--max-val", type=int, default=1_000)
-    parser.add_argument("--max-test", type=int, default=1_000)
+    parser.add_argument("--max-train", type=int, default=100_000, help="Broj trening uzoraka (1 epoha = max_training batches)")
+    parser.add_argument("--max-val", type=int, default=5_000)
+    parser.add_argument("--max-test", type=int, default=5_000)
     parser.add_argument("--warmup-steps", type=int, default=500)
     parser.add_argument("--grad-clip", type=float, default=1.0)
     parser.add_argument("--resume-from", type=str, default=None, help="Putanja do checkpoint-a (npr. runs/code_comment/weights/epoch_003.pt) za nastavak treninga")
@@ -374,10 +383,12 @@ def main() -> None:
     save_json(run_dir / "run_config.json", asdict(cfg))
     set_seed(cfg.seed)
 
-    print("Učitavam dataset", cfg.dataset_name, "...")
+    language_filter = args.language.strip() or None
+    print("Učitavam dataset", cfg.dataset_name, language_filter and f"(language={language_filter})" or "", "...")
     train_raw, val_raw, test_raw = load_hf_splits(
         cfg.dataset_name, cfg.dataset_config, cfg.seed,
         cfg.max_train_samples, cfg.max_val_samples, cfg.max_test_samples,
+        language_filter=language_filter,
     )
     print("Train:", len(train_raw), "Val:", len(val_raw), "Test:", len(test_raw))
 
@@ -395,7 +406,7 @@ def main() -> None:
     val_ds = Seq2SeqDataset(val, src_tok, tgt_tok, cfg.source_column, cfg.target_column, cfg.context_size)
     test_ds = Seq2SeqDataset(test, src_tok, tgt_tok, cfg.source_column, cfg.target_column, cfg.context_size)
     train_loader = DataLoader(train_ds, batch_size=cfg.batch_size, shuffle=True)
-    val_loader = DataLoader(val_ds, batch_size=min(cfg.batch_size, 32), shuffle=False)
+    val_loader = DataLoader(val_ds, batch_size=min(cfg.batch_size, 64), shuffle=False)
     test_loader = DataLoader(test_ds, batch_size=1, shuffle=False)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

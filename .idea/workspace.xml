@@ -6,8 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="4a53df74-1e8a-43fb-b025-8f134b88c104" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code_comment/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/code_comment/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code_comment/train_code_comment.py" beforeDir="false" afterPath="$PROJECT_DIR$/code_comment/train_code_comment.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -165,7 +163,7 @@
       <workItem from="1770917898587" duration="160000" />
       <workItem from="1771180677638" duration="4496000" />
       <workItem from="1771350307928" duration="29000" />
-      <workItem from="1771582083135" duration="2823000" />
+      <workItem from="1771582083135" duration="4318000" />
     </task>
     <servers />
   </component>
@@ -176,6 +174,6 @@
     <SUITE FILE_PATH="coverage/transformer$jan_2020_21.coverage" NAME="jan_2020_21 Coverage Results" MODIFIED="1770487031048" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/transformer$fix_best_and_trim_epochs.coverage" NAME="fix_best_and_trim_epochs Coverage Results" MODIFIED="1771582158550" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/hf_seq2seq" />
     <SUITE FILE_PATH="coverage/transformer$train.coverage" NAME="train Coverage Results" MODIFIED="1770386047328" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/transformer$test.coverage" NAME="test Coverage Results" MODIFIED="1771582404764" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/transformer$test.coverage" NAME="test Coverage Results" MODIFIED="1771590935256" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
